@@ -1,0 +1,170 @@
+[
+  {
+    "id": "apex-riding-jacket",
+    "name": "APEX Pro Riding Jacket",
+    "category": "Jackets",
+    "price": "₹12,999",
+    "description": "Premium leather riding jacket with CE-approved armor and ventilation system.",
+    "features": [
+      "Genuine leather construction",
+      "CE Level 2 shoulder & elbow armor",
+      "Removable thermal liner",
+      "Multiple ventilation panels"
+    ],
+    "sizes": ["S", "M", "L", "XL", "XXL"]
+  },
+  {
+    "id": "trail-blazer-helmet",
+    "name": "TrailBlazer Full Face Helmet",
+    "category": "Helmets",
+    "price": "₹8,499",
+    "description": "Aerodynamic full-face helmet with advanced safety features and comfort padding.",
+    "features": [
+      "DOT & ISI certified",
+      "Anti-fog visor",
+      "Lightweight polycarbonate shell",
+      "Quick-release buckle"
+    ],
+    "sizes": ["S", "M", "L", "XL", "XXL"]
+  },
+  {
+    "id": "carbon-pro-gloves",
+    "name": "Carbon Pro Riding Gloves",
+    "category": "Gloves",
+    "price": "₹2,999",
+    "description": "Carbon fiber knuckle protection with touchscreen compatible fingertips.",
+    "features": [
+      "Carbon fiber knuckle guards",
+      "Touchscreen compatible",
+      "Breathable mesh panels",
+      "Reinforced palm grip"
+    ],
+    "sizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "id": "explorer-touring-boots",
+    "name": "Explorer Touring Boots",
+    "category": "Boots",
+    "price": "₹9,999",
+    "description": "Waterproof touring boots with ankle protection and superior comfort.",
+    "features": [
+      "100% waterproof membrane",
+      "CE-certified ankle protection",
+      "Oil-resistant sole",
+      "Gear shift pad reinforcement"
+    ],
+    "sizes": ["7", "8", "9", "10", "11", "12"]
+  },
+  {
+    "id": "velocity-mesh-jacket",
+    "name": "Velocity Mesh Jacket",
+    "category": "Jackets",
+    "price": "₹7,499",
+    "description": "Lightweight mesh jacket perfect for summer riding with CE armor.",
+    "features": [
+      "Full mesh construction",
+      "CE Level 1 armor included",
+      "Reflective strips for visibility",
+      "Removable back protector pocket"
+    ],
+    "sizes": ["S", "M", "L", "XL", "XXL"]
+  },
+  {
+    "id": "thunder-riding-pants",
+    "name": "Thunder Riding Pants",
+    "category": "Pants",
+    "price": "₹6,999",
+    "description": "Durable riding pants with knee armor and abrasion-resistant fabric.",
+    "features": [
+      "Cordura fabric construction",
+      "CE knee armor included",
+      "Adjustable waist",
+      "Ventilated panels"
+    ],
+    "sizes": ["28", "30", "32", "34", "36", "38"]
+  },
+  {
+    "id": "alpha-saddlebags",
+    "name": "Alpha Saddlebag Set",
+    "category": "Luggage",
+    "price": "₹14,999",
+    "description": "Premium waterproof saddlebags with quick-release mounting system.",
+    "features": [
+      "60L total capacity",
+      "100% waterproof construction",
+      "Quick-release mounting",
+      "Reflective safety strips"
+    ],
+    "sizes": ["One Size"]
+  },
+  {
+    "id": "nova-fog-lights",
+    "name": "Nova LED Fog Lights",
+    "category": "Fog Lights",
+    "price": "₹3,499",
+    "description": "High-intensity LED fog lights with adjustable mounting brackets.",
+    "features": [
+      "6000K white LED",
+      "IP67 waterproof rating",
+      "Universal mounting kit",
+      "Low power consumption"
+    ],
+    "sizes": ["One Size"]
+  },
+  {
+    "id": "titan-tank-bag",
+    "name": "Titan Magnetic Tank Bag",
+    "category": "Luggage",
+    "price": "₹4,999",
+    "description": "Expandable tank bag with magnetic mounting and phone pocket.",
+    "features": [
+      "Expandable 18L to 25L",
+      "Strong magnetic base",
+      "Clear phone pocket",
+      "Rain cover included"
+    ],
+    "sizes": ["One Size"]
+  },
+  {
+    "id": "grip-max-gloves",
+    "name": "GripMax Leather Gloves",
+    "category": "Gloves",
+    "price": "₹2,499",
+    "description": "Full-grain leather gloves with superior grip and wrist protection.",
+    "features": [
+      "Full-grain leather",
+      "Knuckle armor",
+      "Wrist closure strap",
+      "Perforated for airflow"
+    ],
+    "sizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "id": "urban-jet-helmet",
+    "name": "Urban Jet Open Face Helmet",
+    "category": "Helmets",
+    "price": "₹5,999",
+    "description": "Stylish open-face helmet perfect for city commuting.",
+    "features": [
+      "ISI certified",
+      "Integrated sun visor",
+      "Lightweight ABS shell",
+      "Quick-release strap"
+    ],
+    "sizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "id": "armor-vest",
+    "name": "Guardian Armor Vest",
+    "category": "Protection",
+    "price": "₹5,499",
+    "description": "Full body armor vest with chest, back, and shoulder protection.",
+    "features": [
+      "CE Level 2 armor",
+      "Breathable mesh backing",
+      "Adjustable straps",
+      "Lightweight construction"
+    ],
+    "sizes": ["S", "M", "L", "XL"]
+  }
+]
