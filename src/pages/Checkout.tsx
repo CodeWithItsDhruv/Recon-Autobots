@@ -164,9 +164,16 @@ const Checkout = () => {
     try {
       // Call real PIN code API
       const response = await fetch(`https://api.postalpincode.in/pincode/${pinCode}`);
-      const data = await response.json();
+      const result = await response.json();
       
-      if (data.Status === 'Success' && data.PostOffice && data.PostOffice.length > 0) {
+      // API returns an array, get first element
+      const data = Array.isArray(result) ? result[0] : result;
+      
+      // Check for successful response (case-insensitive)
+      const isSuccess = data.Status === 'Success' || data.status === 'Success';
+      const hasPostOffice = data.PostOffice && Array.isArray(data.PostOffice) && data.PostOffice.length > 0;
+      
+      if (isSuccess && hasPostOffice) {
         const postOffice = data.PostOffice[0]; // Use first post office data
         
         // Calculate delivery days based on state and city
