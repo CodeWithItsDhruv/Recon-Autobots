@@ -897,10 +897,10 @@ const Navbar = () => {
                 <Separator className="my-3" />
                 
                 {/* PIN Code Checker */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Check Delivery</span>
+                    <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                    <span className="text-xs font-medium text-gray-600">Check Delivery</span>
                   </div>
                   
                   <div className="relative">
@@ -910,43 +910,35 @@ const Navbar = () => {
                       value={pinCode}
                       onChange={(e) => handlePinCodeChange(e.target.value)}
                       maxLength={6}
-                      className="pr-10 text-sm"
+                      className="pr-8 h-8 text-xs border-gray-200 focus:border-gray-300"
                     />
                     {isCheckingDelivery && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                        <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
                       </div>
                     )}
                   </div>
                   
                   {deliveryInfo && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2"
+                      className="bg-gray-50 border border-gray-200 rounded-md p-2"
                     >
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">
-                          Delivery Available to {deliveryInfo.city}, {deliveryInfo.state}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-white rounded p-2 border border-green-200">
-                          <div className="font-medium text-gray-900">Standard</div>
-                          <div className="text-green-600 font-semibold">{deliveryInfo.standardDays} days</div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle className="w-3 h-3 text-green-600" />
+                          <span className="text-gray-700 font-medium">
+                            {deliveryInfo.city}, {deliveryInfo.state}
+                          </span>
                         </div>
-                        <div className="bg-white rounded p-2 border border-green-200">
-                          <div className="font-medium text-gray-900">Express</div>
-                          <div className="text-green-600 font-semibold">{deliveryInfo.expressDays} days</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-green-700">
-                        <div className="flex items-center gap-1">
-                          <Info className="w-3 h-3" />
-                          <span>Includes processing time</span>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-gray-600">
+                            <span className="font-medium text-gray-900">{deliveryInfo.standardDays}d</span> standard
+                          </span>
+                          <span className="text-gray-600">
+                            <span className="font-medium text-gray-900">{deliveryInfo.expressDays}d</span> express
+                          </span>
                         </div>
                       </div>
                     </motion.div>
@@ -954,14 +946,14 @@ const Navbar = () => {
                   
                   {pinCode && pinCode.length === 6 && !deliveryInfo && !isCheckingDelivery && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-red-50 border border-red-200 rounded-lg p-3"
+                      className="bg-red-50 border border-red-200 rounded-md p-2"
                     >
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-600" />
-                        <span className="text-sm font-medium text-red-800">
-                          Delivery not available to this PIN code
+                      <div className="flex items-center gap-1.5">
+                        <AlertCircle className="w-3 h-3 text-red-600" />
+                        <span className="text-xs font-medium text-red-700">
+                          Delivery not available
                         </span>
                       </div>
                     </motion.div>
