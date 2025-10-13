@@ -681,38 +681,29 @@ const Checkout = () => {
                           {/* Delivery Information */}
                           {deliveryInfo && (
                             <motion.div
-                              initial={{ opacity: 0, y: -10 }}
+                              initial={{ opacity: 0, y: 5 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="mt-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg"
+                              className="mt-2 bg-gray-50 border border-gray-200 rounded-md p-2"
                             >
-                              <div className="flex items-start space-x-2">
-                                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-green-800 text-sm">
-                                    ✅ Delivery Available to {deliveryInfo.city}, {deliveryInfo.state}
-                                    {deliveryInfo.city === 'Vadodara' && (
-                                      <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 text-xs">
-                                        Shop Location
-                                      </Badge>
-                                    )}
-                                  </h4>
-                                  <div className="mt-2 space-y-1">
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-700">Standard Shipping:</span>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                        {deliveryInfo.standardDays} days
-                                      </Badge>
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-700">Express Shipping:</span>
-                                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                        {deliveryInfo.expressDays} days
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <p className="text-xs text-gray-600 mt-2">
-                                    📦 Includes processing time + verified delivery via India Post API
-                                  </p>
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                  <span className="text-gray-700 font-medium">
+                                    {deliveryInfo.city}, {deliveryInfo.state}
+                                  </span>
+                                  {deliveryInfo.city === 'Vadodara' && (
+                                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs px-1 py-0">
+                                      Shop
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-3 text-xs">
+                                  <span className="text-gray-600">
+                                    <span className="font-medium text-gray-900">{deliveryInfo.standardDays}d</span> standard
+                                  </span>
+                                  <span className="text-gray-600">
+                                    <span className="font-medium text-gray-900">{deliveryInfo.expressDays}d</span> express
+                                  </span>
                                 </div>
                               </div>
                             </motion.div>
