@@ -674,49 +674,18 @@ const Checkout = () => {
                           </Label>
                         </div>
                         
-                        {formData.paymentMethod === 'razorpay' && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-                          >
-                            <div className="flex items-start space-x-2">
-                              <Lock className="w-4 h-4 text-blue-600 mt-0.5" />
-                              <p className="text-sm text-blue-800">
-                                You'll be redirected to Razorpay's secure payment gateway to complete your purchase safely.
-                              </p>
-                            </div>
-                          </motion.div>
-                        )}
-                        
-                        <div className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'phonepe' ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                          <RadioGroupItem value="phonepe" id="phonepe" className="mt-1" />
-                          <Label htmlFor="phonepe" className="flex-1 cursor-pointer">
-                            <div>
-                              <div className="font-semibold">PhonePe Payment Gateway</div>
-                              <div className="text-sm text-gray-600 mt-1">UPI, Cards & NetBanking</div>
-                              <div className="flex items-center space-x-2 mt-2">
-                                <span className="text-xl">💳</span>
-                                <span className="text-xl">🏦</span>
-                                <span className="text-xs text-gray-500">+4 more</span>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                        
-                        <div className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'cod' ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                          <RadioGroupItem value="cod" id="cod" className="mt-1" />
-                          <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                            <div>
-                              <div className="font-semibold">Cash on Delivery</div>
-                              <div className="text-sm text-gray-600 mt-1">Pay when you receive your order</div>
-                              <div className="flex items-center space-x-2 mt-2">
-                                <span className="text-xl">💵</span>
-                                <Badge variant="secondary" className="text-xs">₹50 extra charges apply</Badge>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-3"
+                        >
+                          <div className="flex items-start space-x-2">
+                            <Lock className="w-4 h-4 text-blue-600 mt-0.5" />
+                            <p className="text-sm text-blue-800">
+                              You'll be redirected to Razorpay's secure payment gateway to complete your purchase safely.
+                            </p>
+                          </div>
+                        </motion.div>
                       </div>
                     </RadioGroup>
                   </CardContent>
