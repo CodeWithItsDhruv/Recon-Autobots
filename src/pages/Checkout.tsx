@@ -161,49 +161,106 @@ const Checkout = () => {
 
     setIsCheckingDelivery(true);
     
-    // Simulate API call to check delivery availability
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock delivery data based on PIN code patterns
-    const deliveryData = {
-      // Major cities - faster delivery
-      '400001': { city: 'Mumbai', state: 'Maharashtra', standardDays: 3, expressDays: 1 },
-      '110001': { city: 'New Delhi', state: 'Delhi', standardDays: 2, expressDays: 1 },
-      '560001': { city: 'Bangalore', state: 'Karnataka', standardDays: 4, expressDays: 2 },
-      '600001': { city: 'Chennai', state: 'Tamil Nadu', standardDays: 4, expressDays: 2 },
-      '700001': { city: 'Kolkata', state: 'West Bengal', standardDays: 5, expressDays: 2 },
-      '380001': { city: 'Ahmedabad', state: 'Gujarat', standardDays: 3, expressDays: 1 },
-      '394339': { city: 'Surat', state: 'Gujarat', standardDays: 2, expressDays: 1 },
-      '390007': { city: 'Vadodara', state: 'Gujarat', standardDays: 1, expressDays: 1 },
+    try {
+      // Call real PIN code API
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pinCode}`);
+      const data = await response.json();
       
-      // Tier 2 cities
-      '302001': { city: 'Jaipur', state: 'Rajasthan', standardDays: 5, expressDays: 2 },
-      '411001': { city: 'Pune', state: 'Maharashtra', standardDays: 4, expressDays: 2 },
-      '500001': { city: 'Hyderabad', state: 'Telangana', standardDays: 5, expressDays: 2 },
-      
-      // Default for other PIN codes
-      'default': { city: 'Your City', state: 'Your State', standardDays: 7, expressDays: 3 }
-    };
+      if (data.Status === 'Success' && data.PostOffice && data.PostOffice.length > 0) {
+        const postOffice = data.PostOffice[0]; // Use first post office data
+        
+        // Calculate delivery days based on state and city
+        const deliveryDays = calculateDeliveryDays(postOffice.State, postOffice.District);
+        
+        setDeliveryInfo({
+          isAvailable: true,
+          standardDays: deliveryDays.standard,
+          expressDays: deliveryDays.express,
+          city: postOffice.District,
+          state: postOffice.State
+        });
 
-    const pinData = deliveryData[pinCode as keyof typeof deliveryData] || deliveryData.default;
-    
-    setDeliveryInfo({
-      isAvailable: true,
-      standardDays: pinData.standardDays,
-      expressDays: pinData.expressDays,
-      city: pinData.city,
-      state: pinData.state
-    });
-
-    // Update city and state if they're empty
-    if (!formData.city) {
-      setFormData(prev => ({ ...prev, city: pinData.city }));
-    }
-    if (!formData.state) {
-      setFormData(prev => ({ ...prev, state: pinData.state }));
+        // Update city and state if they're empty
+        if (!formData.city) {
+          setFormData(prev => ({ ...prev, city: postOffice.District }));
+        }
+        if (!formData.state) {
+          setFormData(prev => ({ ...prev, state: postOffice.State }));
+        }
+      } else {
+        // Invalid PIN code
+        setDeliveryInfo(null);
+        toast.error('Invalid PIN code', {
+          description: 'Please enter a valid 6-digit PIN code'
+        });
+      }
+    } catch (error) {
+      console.error('Error checking PIN code:', error);
+      setDeliveryInfo(null);
+      toast.error('Unable to verify PIN code', {
+        description: 'Please check your internet connection and try again'
+      });
     }
 
     setIsCheckingDelivery(false);
+  };
+
+  const calculateDeliveryDays = (state: string, city: string) => {
+    // Special case for Vadodara (shop location)
+    if (city.toLowerCase().includes('vadodara') || city.toLowerCase().includes('baroda')) {
+      return { standard: 1, express: 1 };
+    }
+    
+    // Major metropolitan cities - faster delivery
+    const majorCities = ['mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 'hyderabad', 'pune', 'ahmedabad', 'surat'];
+    const isMajorCity = majorCities.some(cityName => city.toLowerCase().includes(cityName));
+    
+    if (isMajorCity) {
+      return { standard: 3, express: 1 };
+    }
+    
+    // State-based delivery calculation
+    const stateDeliveryMap: { [key: string]: { standard: number; express: number } } = {
+      'Gujarat': { standard: 2, express: 1 },
+      'Maharashtra': { standard: 4, express: 2 },
+      'Delhi': { standard: 2, express: 1 },
+      'Karnataka': { standard: 4, express: 2 },
+      'Tamil Nadu': { standard: 4, express: 2 },
+      'West Bengal': { standard: 5, express: 2 },
+      'Telangana': { standard: 5, express: 2 },
+      'Rajasthan': { standard: 5, express: 2 },
+      'Uttar Pradesh': { standard: 6, express: 3 },
+      'Punjab': { standard: 5, express: 2 },
+      'Haryana': { standard: 4, express: 2 },
+      'Kerala': { standard: 5, express: 2 },
+      'Madhya Pradesh': { standard: 6, express: 3 },
+      'Bihar': { standard: 7, express: 3 },
+      'Odisha': { standard: 6, express: 3 },
+      'Assam': { standard: 8, express: 4 },
+      'Jharkhand': { standard: 6, express: 3 },
+      'Chhattisgarh': { standard: 6, express: 3 },
+      'Himachal Pradesh': { standard: 7, express: 3 },
+      'Uttarakhand': { standard: 6, express: 3 },
+      'Goa': { standard: 4, express: 2 },
+      'Jammu and Kashmir': { standard: 8, express: 4 },
+      'Ladakh': { standard: 10, express: 5 },
+      'Arunachal Pradesh': { standard: 10, express: 5 },
+      'Manipur': { standard: 9, express: 4 },
+      'Meghalaya': { standard: 8, express: 4 },
+      'Mizoram': { standard: 9, express: 4 },
+      'Nagaland': { standard: 9, express: 4 },
+      'Sikkim': { standard: 8, express: 4 },
+      'Tripura': { standard: 8, express: 4 },
+      'Andhra Pradesh': { standard: 5, express: 2 },
+      'Chandigarh': { standard: 4, express: 2 },
+      'Dadra and Nagar Haveli': { standard: 3, express: 1 },
+      'Daman and Diu': { standard: 3, express: 1 },
+      'Lakshadweep': { standard: 8, express: 4 },
+      'Puducherry': { standard: 4, express: 2 },
+      'Andaman and Nicobar Islands': { standard: 10, express: 5 }
+    };
+    
+    return stateDeliveryMap[state] || { standard: 7, express: 3 };
   };
 
   const handleInputChange = (field: keyof CheckoutForm, value: string | boolean) => {
@@ -631,7 +688,7 @@ const Checkout = () => {
                                     </div>
                                   </div>
                                   <p className="text-xs text-gray-600 mt-2">
-                                    📦 Estimated delivery time based on your location
+                                    📦 Delivery times verified using India Post API
                                   </p>
                                 </div>
                               </div>
