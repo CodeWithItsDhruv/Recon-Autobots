@@ -17,7 +17,7 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Removed searchQuery state - using Navbar search instead
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -68,14 +68,7 @@ const Products = () => {
       filtered = filtered.filter(product => product.category === category?.match);
     }
 
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+    // Search filtering handled by Navbar search
 
     // Filter by price range
     filtered = filtered.filter(product => {
@@ -109,17 +102,16 @@ const Products = () => {
     });
 
     return filtered;
-  }, [selectedCategory, searchQuery, priceRange, sortBy, sortOrder]);
+  }, [selectedCategory, priceRange, sortBy, sortOrder]);
 
   const clearFilters = () => {
     setSelectedCategory('all');
-    setSearchQuery('');
     setPriceRange({ min: 0, max: 50000 });
     setSortBy('name');
     setSortOrder('asc');
   };
 
-  const hasActiveFilters = selectedCategory !== 'all' || searchQuery || priceRange.min > 0 || priceRange.max < 50000;
+  const hasActiveFilters = selectedCategory !== 'all' || priceRange.min > 0 || priceRange.max < 50000;
 
   return (
     <>
@@ -153,19 +145,14 @@ const Products = () => {
         {/* Filters & Products */}
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Search and Filter Bar */}
+            {/* Filter Bar */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-                {/* Search */}
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300"
-                  />
+                {/* Search Note */}
+                <div className="flex-1 max-w-md">
+                  <p className="text-sm text-gray-600">
+                    💡 Use the search icon in the navigation bar above to search products
+                  </p>
                 </div>
 
                 {/* Sort Options */}
