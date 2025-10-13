@@ -213,9 +213,16 @@ const Checkout = () => {
   };
 
   const calculateDeliveryDays = (state: string, city: string) => {
+    // Buffer days for order processing and packaging
+    const PROCESSING_BUFFER = 2; // 2 days for order processing and packaging
+    const EXPRESS_BUFFER = 1; // 1 day for express order processing
+    
     // Special case for Vadodara (shop location)
     if (city.toLowerCase().includes('vadodara') || city.toLowerCase().includes('baroda')) {
-      return { standard: 1, express: 1 };
+      return { 
+        standard: 1 + PROCESSING_BUFFER, // 3 days total (1 delivery + 2 processing)
+        express: 1 + EXPRESS_BUFFER // 2 days total (1 delivery + 1 processing)
+      };
     }
     
     // Major metropolitan cities - faster delivery
@@ -223,7 +230,10 @@ const Checkout = () => {
     const isMajorCity = majorCities.some(cityName => city.toLowerCase().includes(cityName));
     
     if (isMajorCity) {
-      return { standard: 3, express: 1 };
+      return { 
+        standard: 3 + PROCESSING_BUFFER, // 5 days total
+        express: 1 + EXPRESS_BUFFER // 2 days total
+      };
     }
     
     // State-based delivery calculation
@@ -267,7 +277,13 @@ const Checkout = () => {
       'Andaman and Nicobar Islands': { standard: 10, express: 5 }
     };
     
-    return stateDeliveryMap[state] || { standard: 7, express: 3 };
+    const baseDays = stateDeliveryMap[state] || { standard: 7, express: 3 };
+    
+    // Add buffer days to base delivery time
+    return {
+      standard: baseDays.standard + PROCESSING_BUFFER,
+      express: baseDays.express + EXPRESS_BUFFER
+    };
   };
 
   const handleInputChange = (field: keyof CheckoutForm, value: string | boolean) => {
@@ -695,7 +711,7 @@ const Checkout = () => {
                                     </div>
                                   </div>
                                   <p className="text-xs text-gray-600 mt-2">
-                                    📦 Delivery times verified using India Post API
+                                    📦 Includes processing time + verified delivery via India Post API
                                   </p>
                                 </div>
                               </div>
