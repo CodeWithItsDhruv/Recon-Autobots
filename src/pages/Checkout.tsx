@@ -552,7 +552,7 @@ const Checkout = () => {
                         )}
                       </div>
                       
-                      <div className="space-y-2 pt-2">
+                      <div className="pt-2">
                         <div className="flex items-start space-x-2">
                           <Checkbox
                             id="saveInfo"
@@ -562,17 +562,6 @@ const Checkout = () => {
                           />
                           <Label htmlFor="saveInfo" className="text-sm text-gray-600 cursor-pointer">
                             Save this information for faster checkout next time
-                          </Label>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                          <Checkbox
-                            id="textNews"
-                            checked={formData.textNews}
-                            onCheckedChange={(checked) => handleInputChange('textNews', checked as boolean)}
-                            className="mt-0.5"
-                          />
-                          <Label htmlFor="textNews" className="text-sm text-gray-600 cursor-pointer">
-                            Send me order updates via SMS
                           </Label>
                         </div>
                       </div>
