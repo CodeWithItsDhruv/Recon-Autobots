@@ -174,6 +174,7 @@ const Checkout = () => {
       '700001': { city: 'Kolkata', state: 'West Bengal', standardDays: 5, expressDays: 2 },
       '380001': { city: 'Ahmedabad', state: 'Gujarat', standardDays: 3, expressDays: 1 },
       '394339': { city: 'Surat', state: 'Gujarat', standardDays: 2, expressDays: 1 },
+      '390007': { city: 'Vadodara', state: 'Gujarat', standardDays: 1, expressDays: 1 },
       
       // Tier 2 cities
       '302001': { city: 'Jaipur', state: 'Rajasthan', standardDays: 5, expressDays: 2 },
@@ -609,6 +610,11 @@ const Checkout = () => {
                                 <div className="flex-1">
                                   <h4 className="font-semibold text-green-800 text-sm">
                                     ✅ Delivery Available to {deliveryInfo.city}, {deliveryInfo.state}
+                                    {deliveryInfo.city === 'Vadodara' && (
+                                      <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 text-xs">
+                                        Shop Location
+                                      </Badge>
+                                    )}
                                   </h4>
                                   <div className="mt-2 space-y-1">
                                     <div className="flex items-center justify-between text-sm">
