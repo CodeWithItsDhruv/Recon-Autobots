@@ -96,6 +96,14 @@ const Checkout = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [deliveryInfo, setDeliveryInfo] = useState<{
+    isAvailable: boolean;
+    standardDays: number;
+    expressDays: number;
+    city: string;
+    state: string;
+  } | null>(null);
+  const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -145,6 +153,58 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkDeliveryAvailability = async (pinCode: string) => {
+    if (!pinCode || pinCode.length !== 6) {
+      setDeliveryInfo(null);
+      return;
+    }
+
+    setIsCheckingDelivery(true);
+    
+    // Simulate API call to check delivery availability
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock delivery data based on PIN code patterns
+    const deliveryData = {
+      // Major cities - faster delivery
+      '400001': { city: 'Mumbai', state: 'Maharashtra', standardDays: 3, expressDays: 1 },
+      '110001': { city: 'New Delhi', state: 'Delhi', standardDays: 2, expressDays: 1 },
+      '560001': { city: 'Bangalore', state: 'Karnataka', standardDays: 4, expressDays: 2 },
+      '600001': { city: 'Chennai', state: 'Tamil Nadu', standardDays: 4, expressDays: 2 },
+      '700001': { city: 'Kolkata', state: 'West Bengal', standardDays: 5, expressDays: 2 },
+      '380001': { city: 'Ahmedabad', state: 'Gujarat', standardDays: 3, expressDays: 1 },
+      '394339': { city: 'Surat', state: 'Gujarat', standardDays: 2, expressDays: 1 },
+      
+      // Tier 2 cities
+      '302001': { city: 'Jaipur', state: 'Rajasthan', standardDays: 5, expressDays: 2 },
+      '411001': { city: 'Pune', state: 'Maharashtra', standardDays: 4, expressDays: 2 },
+      '500001': { city: 'Hyderabad', state: 'Telangana', standardDays: 5, expressDays: 2 },
+      
+      // Default for other PIN codes
+      'default': { city: 'Your City', state: 'Your State', standardDays: 7, expressDays: 3 }
+    };
+
+    const pinData = deliveryData[pinCode as keyof typeof deliveryData] || deliveryData.default;
+    
+    setDeliveryInfo({
+      isAvailable: true,
+      standardDays: pinData.standardDays,
+      expressDays: pinData.expressDays,
+      city: pinData.city,
+      state: pinData.state
+    });
+
+    // Update city and state if they're empty
+    if (!formData.city) {
+      setFormData(prev => ({ ...prev, city: pinData.city }));
+    }
+    if (!formData.state) {
+      setFormData(prev => ({ ...prev, state: pinData.state }));
+    }
+
+    setIsCheckingDelivery(false);
+  };
+
   const handleInputChange = (field: keyof CheckoutForm, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -156,6 +216,11 @@ const Checkout = () => {
         ...prev,
         [field]: undefined
       }));
+    }
+
+    // Check delivery when PIN code changes
+    if (field === 'pinCode' && typeof value === 'string') {
+      checkDeliveryAvailability(value);
     }
   };
 
@@ -507,13 +572,20 @@ const Checkout = () => {
                         </div>
                         <div>
                           <Label htmlFor="pinCode" className="text-sm font-medium">PIN code *</Label>
-                          <Input
-                            id="pinCode"
-                            placeholder="400001"
-                            value={formData.pinCode}
-                            onChange={(e) => handleInputChange('pinCode', e.target.value)}
-                            className={`mt-1.5 ${errors.pinCode ? 'border-red-500' : ''}`}
-                          />
+                          <div className="relative mt-1.5">
+                            <Input
+                              id="pinCode"
+                              placeholder="400001"
+                              value={formData.pinCode}
+                              onChange={(e) => handleInputChange('pinCode', e.target.value)}
+                              className={`${errors.pinCode ? 'border-red-500' : ''}`}
+                            />
+                            {isCheckingDelivery && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                              </div>
+                            )}
+                          </div>
                           {errors.pinCode && (
                             <motion.p
                               initial={{ opacity: 0, y: -10 }}
@@ -523,6 +595,41 @@ const Checkout = () => {
                               <AlertCircle className="w-3 h-3" />
                               <span>{errors.pinCode}</span>
                             </motion.p>
+                          )}
+                          
+                          {/* Delivery Information */}
+                          {deliveryInfo && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="mt-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg"
+                            >
+                              <div className="flex items-start space-x-2">
+                                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-green-800 text-sm">
+                                    ✅ Delivery Available to {deliveryInfo.city}, {deliveryInfo.state}
+                                  </h4>
+                                  <div className="mt-2 space-y-1">
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-700">Standard Shipping:</span>
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                        {deliveryInfo.standardDays} days
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-700">Express Shipping:</span>
+                                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                        {deliveryInfo.expressDays} days
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-gray-600 mt-2">
+                                    📦 Estimated delivery time based on your location
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
                           )}
                         </div>
                       </div>
@@ -596,7 +703,9 @@ const Checkout = () => {
                             <div className="flex justify-between items-center">
                               <div>
                                 <div className="font-semibold">FREE Standard Shipping</div>
-                                <div className="text-sm text-gray-500">Delivery in 5-7 business days</div>
+                                <div className="text-sm text-gray-500">
+                                  {deliveryInfo ? `Delivery in ${deliveryInfo.standardDays} business days` : 'Delivery in 5-7 business days'}
+                                </div>
                               </div>
                               <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">FREE</Badge>
                             </div>
@@ -612,7 +721,9 @@ const Checkout = () => {
                                   <span>Express Shipping</span>
                                   <Badge variant="secondary" className="bg-blue-100 text-blue-800">Fast</Badge>
                                 </div>
-                                <div className="text-sm text-gray-500">Delivery in 2-3 business days</div>
+                                <div className="text-sm text-gray-500">
+                                  {deliveryInfo ? `Delivery in ${deliveryInfo.expressDays} business days` : 'Delivery in 2-3 business days'}
+                                </div>
                               </div>
                               <span className="font-semibold">₹200</span>
                             </div>
