@@ -187,14 +187,6 @@ const ProductDetail = () => {
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Add to Cart
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full font-semibold h-12"
-                  onClick={() => navigate('/contact')}
-                >
-                  Find a Dealer
-                </Button>
               </div>
 
               {/* Info Badges */}
