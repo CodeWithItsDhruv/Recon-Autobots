@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -69,6 +69,7 @@ interface FormErrors {
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   
@@ -104,6 +105,26 @@ const Checkout = () => {
     state: string;
   } | null>(null);
   const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
+
+  // Handle navigation state from cart (pre-filled PIN code data)
+  useEffect(() => {
+    if (location.state?.pinCode && location.state?.deliveryInfo) {
+      const { pinCode, deliveryInfo } = location.state;
+      
+      // Pre-fill PIN code and delivery info
+      setFormData(prev => ({
+        ...prev,
+        pinCode: pinCode,
+        city: deliveryInfo.city,
+        state: deliveryInfo.state
+      }));
+      
+      setDeliveryInfo(deliveryInfo);
+      
+      // Clear the navigation state to prevent re-filling on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -187,13 +208,12 @@ const Checkout = () => {
           state: postOffice.State
         });
 
-        // Update city and state if they're empty
-        if (!formData.city) {
-          setFormData(prev => ({ ...prev, city: postOffice.District }));
-        }
-        if (!formData.state) {
-          setFormData(prev => ({ ...prev, state: postOffice.State }));
-        }
+        // Auto-fill city and state from PIN code data
+        setFormData(prev => ({ 
+          ...prev, 
+          city: postOffice.District,
+          state: postOffice.State
+        }));
       } else {
         // Invalid PIN code
         setDeliveryInfo(null);

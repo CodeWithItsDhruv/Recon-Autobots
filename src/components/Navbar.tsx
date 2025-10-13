@@ -941,6 +941,9 @@ const Navbar = () => {
                           </span>
                         </div>
                       </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        📍 Location will be auto-filled at checkout
+                      </div>
                     </motion.div>
                   )}
                   
@@ -974,7 +977,12 @@ const Navbar = () => {
                     className="w-full bg-black text-white hover:bg-gray-900 h-12 text-base font-bold shadow-lg transition-all hover:shadow-xl"
                     onClick={() => {
                       setCartOpen(false);
-                      navigate('/checkout');
+                      navigate('/checkout', { 
+                        state: { 
+                          pinCode: pinCode,
+                          deliveryInfo: deliveryInfo 
+                        } 
+                      });
                     }}
                   >
                     Proceed to Checkout
