@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { Menu, X, ChevronDown, Search, ShoppingCart, User, LogOut, Settings, Shield, Package, Trash2, Plus, Minus } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, ShoppingCart, User, LogOut, Settings, Shield, Package, Trash2, Plus, Minus, MapPin, CheckCircle, AlertCircle, Loader2, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 import productsData from '@/data/products.json';
 import product1 from '@/assets/product-1.jpg';
 import product2 from '@/assets/product-2.jpg';
@@ -24,6 +26,17 @@ const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // PIN code checker state
+  const [pinCode, setPinCode] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState<{
+    isAvailable: boolean;
+    standardDays: number;
+    expressDays: number;
+    city: string;
+    state: string;
+  } | null>(null);
+  const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +60,126 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileDropdownOpen]);
+
+  // PIN code checker functions
+  const calculateDeliveryDays = (state: string, city: string) => {
+    const PROCESSING_BUFFER = 2;
+    const EXPRESS_BUFFER = 1;
+    
+    if (city.toLowerCase().includes('vadodara') || city.toLowerCase().includes('baroda')) {
+      return { 
+        standard: 1 + PROCESSING_BUFFER,
+        express: 1 + EXPRESS_BUFFER
+      };
+    }
+    
+    const majorCities = ['mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 'hyderabad', 'pune', 'ahmedabad', 'surat'];
+    const isMajorCity = majorCities.some(cityName => city.toLowerCase().includes(cityName));
+    
+    if (isMajorCity) {
+      return { 
+        standard: 3 + PROCESSING_BUFFER,
+        express: 1 + EXPRESS_BUFFER
+      };
+    }
+    
+    const stateDeliveryMap: { [key: string]: { standard: number; express: number } } = {
+      'Gujarat': { standard: 2, express: 1 },
+      'Maharashtra': { standard: 4, express: 2 },
+      'Delhi': { standard: 2, express: 1 },
+      'Karnataka': { standard: 4, express: 2 },
+      'Tamil Nadu': { standard: 4, express: 2 },
+      'West Bengal': { standard: 5, express: 2 },
+      'Telangana': { standard: 5, express: 2 },
+      'Rajasthan': { standard: 5, express: 2 },
+      'Uttar Pradesh': { standard: 6, express: 3 },
+      'Punjab': { standard: 5, express: 2 },
+      'Haryana': { standard: 4, express: 2 },
+      'Kerala': { standard: 5, express: 2 },
+      'Madhya Pradesh': { standard: 6, express: 3 },
+      'Bihar': { standard: 7, express: 3 },
+      'Odisha': { standard: 6, express: 3 },
+      'Assam': { standard: 8, express: 4 },
+      'Jharkhand': { standard: 6, express: 3 },
+      'Chhattisgarh': { standard: 6, express: 3 },
+      'Himachal Pradesh': { standard: 7, express: 3 },
+      'Uttarakhand': { standard: 6, express: 3 },
+      'Goa': { standard: 4, express: 2 },
+      'Jammu and Kashmir': { standard: 8, express: 4 },
+      'Ladakh': { standard: 10, express: 5 },
+      'Arunachal Pradesh': { standard: 10, express: 5 },
+      'Manipur': { standard: 9, express: 4 },
+      'Meghalaya': { standard: 8, express: 4 },
+      'Mizoram': { standard: 9, express: 4 },
+      'Nagaland': { standard: 9, express: 4 },
+      'Sikkim': { standard: 8, express: 4 },
+      'Tripura': { standard: 8, express: 4 },
+      'Andhra Pradesh': { standard: 5, express: 2 },
+      'Chandigarh': { standard: 4, express: 2 },
+      'Dadra and Nagar Haveli': { standard: 3, express: 1 },
+      'Daman and Diu': { standard: 3, express: 1 },
+      'Lakshadweep': { standard: 8, express: 4 },
+      'Puducherry': { standard: 4, express: 2 },
+      'Andaman and Nicobar Islands': { standard: 10, express: 5 }
+    };
+    
+    const baseDays = stateDeliveryMap[state] || { standard: 7, express: 3 };
+    
+    return {
+      standard: baseDays.standard + PROCESSING_BUFFER,
+      express: baseDays.express + EXPRESS_BUFFER
+    };
+  };
+
+  const checkDeliveryAvailability = async (pinCodeValue: string) => {
+    if (!pinCodeValue || pinCodeValue.length !== 6) {
+      setDeliveryInfo(null);
+      return;
+    }
+
+    setIsCheckingDelivery(true);
+    
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pinCodeValue}`);
+      const result = await response.json();
+      
+      const data = Array.isArray(result) ? result[0] : result;
+      
+      const isSuccess = data.Status === 'Success' || data.status === 'Success';
+      const hasPostOffice = data.PostOffice && Array.isArray(data.PostOffice) && data.PostOffice.length > 0;
+      
+      if (isSuccess && hasPostOffice) {
+        const postOffice = data.PostOffice[0];
+        const deliveryDays = calculateDeliveryDays(postOffice.State, postOffice.District);
+        
+        setDeliveryInfo({
+          isAvailable: true,
+          standardDays: deliveryDays.standard,
+          expressDays: deliveryDays.express,
+          city: postOffice.District,
+          state: postOffice.State
+        });
+      } else {
+        setDeliveryInfo(null);
+        toast.error('Invalid PIN code', {
+          description: 'Please enter a valid 6-digit PIN code'
+        });
+      }
+    } catch (error) {
+      console.error('Error checking PIN code:', error);
+      setDeliveryInfo(null);
+      toast.error('Unable to verify PIN code', {
+        description: 'Please check your internet connection and try again'
+      });
+    }
+
+    setIsCheckingDelivery(false);
+  };
+
+  const handlePinCodeChange = (value: string) => {
+    setPinCode(value);
+    checkDeliveryAvailability(value);
+  };
 
   const mainCategories = [
     { name: 'Helmets', path: '/products?category=helmets' },
@@ -759,6 +892,80 @@ const Navbar = () => {
                     <span className="text-sm text-gray-600">Shipping</span>
                     <span className="text-xs text-gray-500 text-right">Calculated at<br/>checkout</span>
                   </div>
+                </div>
+                
+                <Separator className="my-3" />
+                
+                {/* PIN Code Checker */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Check Delivery</span>
+                  </div>
+                  
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Enter PIN code"
+                      value={pinCode}
+                      onChange={(e) => handlePinCodeChange(e.target.value)}
+                      maxLength={6}
+                      className="pr-10 text-sm"
+                    />
+                    {isCheckingDelivery && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {deliveryInfo && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">
+                          Delivery Available to {deliveryInfo.city}, {deliveryInfo.state}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-white rounded p-2 border border-green-200">
+                          <div className="font-medium text-gray-900">Standard</div>
+                          <div className="text-green-600 font-semibold">{deliveryInfo.standardDays} days</div>
+                        </div>
+                        <div className="bg-white rounded p-2 border border-green-200">
+                          <div className="font-medium text-gray-900">Express</div>
+                          <div className="text-green-600 font-semibold">{deliveryInfo.expressDays} days</div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-green-700">
+                        <div className="flex items-center gap-1">
+                          <Info className="w-3 h-3" />
+                          <span>Includes processing time</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  
+                  {pinCode && pinCode.length === 6 && !deliveryInfo && !isCheckingDelivery && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-red-50 border border-red-200 rounded-lg p-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-medium text-red-800">
+                          Delivery not available to this PIN code
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
                 
                 <Separator className="my-3" />
