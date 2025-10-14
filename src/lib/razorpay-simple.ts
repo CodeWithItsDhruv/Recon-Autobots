@@ -30,7 +30,13 @@ export interface RazorpayOptions {
 }
 
 class RazorpayService {
-  private keyId: string = 'rzp_test_RTLlA6R5z8SMJB';
+  private keyId: string = import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+
+  constructor() {
+    if (!this.keyId) {
+      throw new Error('Razorpay configuration is incomplete. Please check your environment variables.');
+    }
+  }
 
   // Simple script loading - script is already loaded in HTML
   async loadScript(): Promise<void> {
@@ -74,8 +80,8 @@ class RazorpayService {
         key: this.keyId,
         amount: options.amount || 0,
         currency: 'INR',
-        name: 'RECON AUTOBOTS',
-        description: options.description || 'Order Payment',
+        name: import.meta.env.VITE_APP_NAME || 'RECON AUTOBOTS',
+        description: options.description || import.meta.env.VITE_APP_DESCRIPTION || 'Order Payment',
         prefill: options.prefill || {
           name: 'Test User',
           email: 'test@example.com',

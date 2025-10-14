@@ -95,7 +95,7 @@ class FirebaseAuthService {
   ];
 
   // Additional security: time-based validation
-  private static readonly ADMIN_VALIDATION_KEY = 'admin_secure_2024';
+  private static readonly ADMIN_VALIDATION_KEY = import.meta.env.VITE_ADMIN_INVITATION_CODE || 'WELRAB';
 
   // Rate limiting for invitation code attempts
   private static readonly MAX_ATTEMPTS = 3;

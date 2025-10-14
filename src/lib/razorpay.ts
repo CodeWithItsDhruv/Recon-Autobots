@@ -34,8 +34,12 @@ class RazorpayService {
   private keySecret: string;
 
   constructor() {
-    this.keyId = 'rzp_test_RTLlA6R5z8SMJB';
-    this.keySecret = 'YtiFryyjVreOgce3q68rJKz0';
+    this.keyId = import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+    this.keySecret = import.meta.env.VITE_RAZORPAY_KEY_SECRET || '';
+    
+    if (!this.keyId || !this.keySecret) {
+      throw new Error('Razorpay configuration is incomplete. Please check your environment variables.');
+    }
   }
 
   // Load Razorpay script
@@ -97,8 +101,8 @@ class RazorpayService {
         key: this.keyId,
         amount: options.amount || 0,
         currency: options.currency || 'INR',
-        name: options.name || 'RECON AUTOBOTS',
-        description: options.description || 'Motorcycle Riding Gear Purchase',
+        name: options.name || import.meta.env.VITE_APP_NAME || 'RECON AUTOBOTS',
+        description: options.description || import.meta.env.VITE_APP_DESCRIPTION || 'Motorcycle Riding Gear Purchase',
         prefill: options.prefill || {
           name: '',
           email: '',
