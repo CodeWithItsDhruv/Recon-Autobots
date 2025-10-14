@@ -110,6 +110,11 @@ All colors MUST be HSL.
     @apply scale-105;
   }
 
+  .py-16 {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   /* Scrolling text animation */
   @keyframes scroll {
     0% {

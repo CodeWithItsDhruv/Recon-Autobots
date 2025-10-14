@@ -80,8 +80,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/track-order" className="hover:text-accent transition-colors">
-                  Track Order
+                <Link to="/orders" className="hover:text-accent transition-colors">
+                  My Orders & Tracking
                 </Link>
               </li>
               <li>

@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import ReadyToRideCTA from '@/components/ReadyToRideCTA';
 import productsData from '@/data/products.json';
 import product1 from '@/assets/product-1.jpg';
 import product2 from '@/assets/product-2.jpg';
@@ -15,9 +17,14 @@ const Products = () => {
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
+
+  // Update selectedCategory when URL changes
+  useEffect(() => {
+    setSelectedCategory(categoryParam || 'all');
+  }, [categoryParam]);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  // Removed searchQuery state - using Navbar search instead
+  const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -68,7 +75,14 @@ const Products = () => {
       filtered = filtered.filter(product => product.category === category?.match);
     }
 
-    // Search filtering handled by Navbar search
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
     // Filter by price range
     filtered = filtered.filter(product => {
@@ -102,16 +116,17 @@ const Products = () => {
     });
 
     return filtered;
-  }, [selectedCategory, priceRange, sortBy, sortOrder]);
+  }, [selectedCategory, searchQuery, priceRange, sortBy, sortOrder]);
 
   const clearFilters = () => {
     setSelectedCategory('all');
+    setSearchQuery('');
     setPriceRange({ min: 0, max: 50000 });
     setSortBy('name');
     setSortOrder('asc');
   };
 
-  const hasActiveFilters = selectedCategory !== 'all' || priceRange.min > 0 || priceRange.max < 50000;
+  const hasActiveFilters = selectedCategory !== 'all' || searchQuery || priceRange.min > 0 || priceRange.max < 50000;
 
   return (
     <>
@@ -129,30 +144,52 @@ const Products = () => {
         {/* Header */}
         <section className="bg-primary text-primary-foreground py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-4xl md:text-6xl font-black mb-4">Our Products</h1>
-              <p className="text-xl text-primary-foreground/90">
-                Premium riding gear for every journey
-              </p>
-            </motion.div>
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="flex-1"
+              >
+                <h1 className="text-4xl md:text-6xl font-black mb-4">Our Products</h1>
+                <p className="text-xl text-primary-foreground/90">
+                  Premium riding gear for every journey
+                </p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="w-full lg:w-auto lg:max-w-md"
+              >
+                <DotLottieReact
+                  src="https://lottie.host/dbf0d44f-cc16-41ea-be49-2c612bd11c0d/R7sqy7zsH6.lottie"
+                  loop={false}
+                  autoplay
+                  style={{ width: '100%', height: '300px', transform: 'scaleX(-1)' }}
+                />
+              </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Filters & Products */}
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Filter Bar */}
+            {/* Search and Filter Bar */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-                {/* Search Note */}
-                <div className="flex-1 max-w-md">
-                  <p className="text-sm text-gray-600">
-                    💡 Use the search icon in the navigation bar above to search products
-                  </p>
+                {/* Search */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300"
+                  />
                 </div>
 
                 {/* Sort Options */}
@@ -313,6 +350,9 @@ const Products = () => {
             )}
           </div>
         </section>
+
+        {/* Ready to Ride CTA Section */}
+        <ReadyToRideCTA />
       </main>
 
       <Footer />

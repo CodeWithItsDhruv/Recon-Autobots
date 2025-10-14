@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { Menu, X, ChevronDown, Search, ShoppingCart, User, LogOut, Settings, Shield, Package, Trash2, Plus, Minus, MapPin, CheckCircle, AlertCircle, Loader2, Info } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, ShoppingCart, User, LogOut, Settings, Shield, Package, Trash2, Plus, Minus, MapPin, CheckCircle, AlertCircle, Loader2, Info, Percent } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -260,7 +260,7 @@ const Navbar = () => {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? 'bg-white shadow-md border-b border-gray-200' : 'bg-white/95 backdrop-blur-md border-b border-gray-100'
         }`}
       >
@@ -283,8 +283,8 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `text-sm font-semibold transition-all duration-200 py-2 px-4 rounded-lg ${
                       isActive 
-                        ? 'text-black bg-gray-100' 
-                        : 'text-gray-600 hover:text-black hover:bg-gray-50'
+                        ? 'text-gray-600' 
+                        : 'text-gray-600 hover:text-gray-800'
                     }`
                   }
                 >
@@ -462,7 +462,7 @@ const Navbar = () => {
                     if (isAuthenticated) {
                       setProfileDropdownOpen(!profileDropdownOpen);
                     } else {
-                      navigate('/admin/login');
+                      navigate('/login');
                     }
                   }}
                   className="p-2.5 text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-colors"
@@ -486,7 +486,7 @@ const Navbar = () => {
                             <User className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">{user?.username}</p>
+                            <p className="font-semibold text-gray-900">{user?.displayName || 'User'}</p>
                             <p className='text-sm text-gray-500'>{user?.role === 'admin' ? 'Administrator' : 'Customer'}</p>
                           </div>
                         </div>
@@ -513,14 +513,6 @@ const Navbar = () => {
                               Manage Products
                             </Link>
                             
-                            <Link
-                              to="/track-order"
-                              onClick={() => setProfileDropdownOpen(false)}
-                              className="flex items-center px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors text-gray-700 hover:text-black font-medium"
-                            >
-                              <Package className="w-4 h-4 mr-3 text-gray-500" />
-                              Track Order
-                            </Link>
                           </>
                         ) : (
                           <>
@@ -542,14 +534,6 @@ const Navbar = () => {
                               My Orders
                             </Link>
                             
-                            <Link
-                              to="/track-order"
-                              onClick={() => setProfileDropdownOpen(false)}
-                              className="flex items-center px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors text-gray-700 hover:text-black font-medium"
-                            >
-                              <Package className="w-4 h-4 mr-3 text-gray-500" />
-                              Track Order
-                            </Link>
                           </>
                         )}
                         
@@ -719,28 +703,61 @@ const Navbar = () => {
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-gray-900 font-semibold">{user?.username}</p>
+                          <p className="text-gray-900 font-semibold">{user?.displayName || 'User'}</p>
                           <p className="text-gray-500 text-sm">{user?.role === 'admin' ? 'Administrator' : 'Customer'}</p>
                         </div>
                       </div>
                       
-                      <Link
-                        to="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
-                      >
-                        <Shield className="w-4 h-4 mr-3 text-gray-500" />
-                        Admin Dashboard
-                      </Link>
-                      
-                      <Link
-                        to="/track-order"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
-                      >
-                        <Package className="w-4 h-4 mr-3 text-gray-500" />
-                        Track Order
-                      </Link>
+                      {user?.role === 'admin' ? (
+                        <>
+                          <Link
+                            to="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                          >
+                            <Shield className="w-4 h-4 mr-3 text-gray-500" />
+                            Admin Dashboard
+                          </Link>
+                          
+                          <Link
+                            to="/admin/products"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                          >
+                            <Settings className="w-4 h-4 mr-3 text-gray-500" />
+                            Manage Products
+                          </Link>
+                          
+                          <Link
+                            to="/admin/coupons"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                          >
+                            <Percent className="w-4 h-4 mr-3 text-gray-500" />
+                            Manage Coupons
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            to="/profile"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                          >
+                            <User className="w-4 h-4 mr-3 text-gray-500" />
+                            My Profile
+                          </Link>
+                          
+                          <Link
+                            to="/orders"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-3 text-gray-500" />
+                            My Orders
+                          </Link>
+                        </>
+                      )}
                       
                       <button
                         onClick={() => {
@@ -780,9 +797,19 @@ const Navbar = () => {
                         <button
                           onClick={() => {
                             setMobileMenuOpen(false);
-                            navigate('/admin/login');
+                            navigate('/login');
                           }}
                           className="flex items-center w-full px-4 py-2.5 bg-black text-white hover:bg-gray-800 rounded-lg transition-colors font-medium"
+                        >
+                          <User className="w-4 h-4 mr-3" />
+                          Login
+                        </button>
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/admin/login');
+                          }}
+                          className="flex items-center w-full px-4 py-2.5 mt-2 bg-gray-800 text-white hover:bg-gray-700 rounded-lg transition-colors font-medium"
                         >
                           <Shield className="w-4 h-4 mr-3" />
                           Admin Login

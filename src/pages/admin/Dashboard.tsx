@@ -43,7 +43,8 @@ import {
   Target,
   Zap,
   AlertTriangle,
-  FileText
+  FileText,
+  Percent
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -399,7 +400,7 @@ const AdminDashboard = () => {
 
                 {/* User Menu */}
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-600">{user?.username}</span>
+                  <span className="text-sm text-gray-600">{user?.displayName || 'Admin'}</span>
                   <Button variant="ghost" size="sm" onClick={logout}>
                     <LogOut className="w-4 h-4" />
                   </Button>
@@ -410,6 +411,7 @@ const AdminDashboard = () => {
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
           {/* Quick Actions */}
           <div className="mb-8">
             <div className="flex flex-wrap gap-3">
@@ -433,6 +435,13 @@ const AdminDashboard = () => {
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Analytics
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/admin/coupons')}
+              >
+                <Percent className="w-4 h-4 mr-2" />
+                Coupons
               </Button>
               <Button 
                 variant="outline"

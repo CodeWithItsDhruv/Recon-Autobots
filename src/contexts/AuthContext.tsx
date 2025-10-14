@@ -1,168 +1,137 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface User {
-  username: string;
-  email: string;
-  loginTime: string;
-  role: 'admin' | 'user';
-}
+import { firebaseAuthService, FirebaseUser } from '@/lib/firebase-auth';
 
 interface AuthContextType {
-  user: User | null;
+  user: FirebaseUser | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
   isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (username: string, email: string, password: string, role?: 'admin' | 'customer') => Promise<void>;
+  createAdmin: (username: string, email: string, password: string, invitationCode: string) => Promise<void>;
+  logout: () => void;
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (updates: Partial<FirebaseUser>) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Demo credentials (in production, this would be handled by a backend)
-  const validCredentials = {
-    admin: {
-      username: 'admin',
-      email: 'admin@reconautobots.com',
-      password: 'admin123',
-      role: 'admin' as const
-    },
-    users: [
-      {
-        username: 'demo',
-        email: 'demo@reconautobots.com',
-        password: 'demo123',
-        role: 'user' as const
-      }
-    ]
-  };
-
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('authUser');
-      
-      if (token && userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-        } catch (error) {
-          // Invalid user data, clear storage
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('authUser');
-        }
-      }
+    // Listen to Firebase auth state changes
+    const unsubscribe = firebaseAuthService.onAuthStateChanged((firebaseUser) => {
+      setUser(firebaseUser);
       setIsLoading(false);
-    };
+    });
 
-    checkAuth();
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check if it's admin login (any username/password combination)
-    if (email === 'admin' || email.includes('admin')) {
-      const userData = {
-        username: 'admin',
-        email: email,
-        loginTime: new Date().toISOString(),
-        role: 'admin' as const
-      };
-
-      // Store auth data
-      localStorage.setItem('authToken', 'demo-auth-token');
-      localStorage.setItem('authUser', JSON.stringify(userData));
-      
+    try {
+      const userData = await firebaseAuthService.signIn(email, password);
       setUser(userData);
+    } catch (error) {
+      throw error;
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Check user credentials
-    const foundUser = validCredentials.users.find(u => u.email === email && u.password === password);
-    if (foundUser) {
-      const userData = {
-        username: foundUser.username,
-        email: foundUser.email,
-        loginTime: new Date().toISOString(),
-        role: foundUser.role
-      };
-
-      // Store auth data
-      localStorage.setItem('authToken', 'demo-auth-token');
-      localStorage.setItem('authUser', JSON.stringify(userData));
-      
-      setUser(userData);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-    throw new Error('Invalid email or password');
   };
 
-  const signup = async (username: string, email: string, password: string): Promise<void> => {
+  const signup = async (username: string, email: string, password: string, role: 'admin' | 'customer' = 'customer'): Promise<void> => {
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check if email already exists
-    const existingUser = validCredentials.users.find(u => u.email === email);
-    if (existingUser) {
+    try {
+      const userData = await firebaseAuthService.createUser(email, password, username, role);
+      setUser(userData);
+    } catch (error) {
+      throw error;
+    } finally {
       setIsLoading(false);
-      throw new Error('Email already exists');
     }
-
-    // Create new user
-    const userData = {
-      username,
-      email,
-      loginTime: new Date().toISOString(),
-      role: 'user' as const
-    };
-
-    // Store auth data
-    localStorage.setItem('authToken', 'demo-auth-token');
-    localStorage.setItem('authUser', JSON.stringify(userData));
-    
-    setUser(userData);
-    setIsLoading(false);
   };
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setUser(null);
+  const createAdmin = async (username: string, email: string, password: string, invitationCode: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const userData = await firebaseAuthService.createAdminUser(email, password, username, invitationCode);
+      setUser(userData);
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await firebaseAuthService.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<void> => {
+    try {
+      await firebaseAuthService.resetPassword(email);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const updateProfile = async (updates: Partial<FirebaseUser>): Promise<void> => {
+    if (!user) throw new Error('No user logged in');
+    
+    try {
+      await firebaseAuthService.updateUserProfile(user.uid, updates);
+      setUser({ ...user, ...updates });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const userData = await firebaseAuthService.signInWithGoogle();
+      setUser(userData);
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
+    isLoading,
     login,
     signup,
+    createAdmin,
     logout,
-    isLoading
+    resetPassword,
+    updateProfile,
+    signInWithGoogle
   };
 
   return (

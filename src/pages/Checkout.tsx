@@ -6,6 +6,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import razorpayService from '@/lib/razorpay-simple';
+import orderService from '@/lib/orders';
+import invoiceService from '@/lib/invoice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -372,19 +375,105 @@ const Checkout = () => {
     setIsProcessing(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      const { total } = calculateTotal();
       
-      clearCart();
+      console.log('Starting payment process for amount:', total);
       
-      toast.success('🎉 Order placed successfully!', {
-        description: `Order confirmation sent to ${formData.email}`,
-        duration: 5000
+      // Create order with Razorpay
+      const orderId = await razorpayService.createOrder(total * 100); // Convert to paise
+      console.log('Order created with ID:', orderId);
+      
+      // Initialize Razorpay payment
+      await razorpayService.initializePayment({
+        amount: total * 100, // Convert to paise
+        currency: 'INR',
+        name: 'RECON AUTOBOTS',
+        description: `Order for ${cartItems.length} item(s)`,
+        order_id: orderId,
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone
+        },
+        notes: {
+          address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pinCode}`,
+          order_items: cartItems.map(item => `${item.name} (${item.size || 'One Size'})`).join(', ')
+        },
+        handler: async (response: any) => {
+          try {
+            // Verify payment
+            const isVerified = await razorpayService.verifyPayment(response);
+            
+            if (isVerified) {
+          // Create order in Firebase
+          const orderId = await orderService.createOrderFromPayment(
+            response,
+            formData,
+            cartItems,
+            { subtotal, tax, shipping, total },
+            user?.uid || 'guest'
+          );
+              
+              // Get the created order for invoice generation
+              const createdOrder = await orderService.getOrderById(orderId);
+              if (createdOrder) {
+                // Generate invoice
+                const invoiceData = {
+                  invoiceNumber: invoiceService.generateInvoiceNumber(),
+                  orderNumber: createdOrder.orderNumber,
+                  date: createdOrder.date,
+                  customer: createdOrder.customer,
+                  items: createdOrder.items.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: item.price * item.quantity
+                  })),
+                  subtotal: createdOrder.subtotal,
+                  tax: createdOrder.tax,
+                  shipping: createdOrder.shipping,
+                  total: createdOrder.total,
+                  paymentMethod: createdOrder.paymentMethod,
+                  paymentId: createdOrder.paymentId
+                };
+                
+                // Download invoice
+                invoiceService.downloadInvoice(invoiceData);
+                
+                // Clear cart
+                clearCart();
+                
+                toast.success('🎉 Payment successful!', {
+                  description: `Order ${createdOrder.orderNumber} placed successfully. Invoice downloaded!`,
+                  duration: 5000
+                });
+              }
+              
+              setTimeout(() => {
+                navigate('/track-order');
+              }, 2000);
+            } else {
+              throw new Error('Payment verification failed');
+            }
+          } catch (error) {
+            toast.error('Payment verification failed', {
+              description: 'Please contact support if amount was deducted'
+            });
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+            toast.info('Payment cancelled', {
+              description: 'You can try again anytime'
+            });
+          }
+        }
       });
       
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
     } catch (error) {
+      console.error('Payment initialization failed:', error);
       toast.error('Payment failed', {
         description: 'Please try again or contact support'
       });
