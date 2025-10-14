@@ -25,7 +25,8 @@ console.log('Environment check:', {
   VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'SET' : 'NOT SET',
   VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'SET' : 'NOT SET',
   VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'SET' : 'NOT SET',
-  'Using fallback config': !import.meta.env.VITE_FIREBASE_API_KEY
+  'Using fallback config': !import.meta.env.VITE_FIREBASE_API_KEY,
+  'Current domain': window.location.hostname
 });
 
 // Validate Firebase configuration
